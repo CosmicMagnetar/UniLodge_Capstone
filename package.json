@@ -1,0 +1,36 @@
+{
+  "name": "unilodge-v2",
+  "version": "2.0.0",
+  "description": "Modern Campus Accommodation Platform - Serverless Monolith",
+  "private": true,
+  "workspaces": [
+    "apps/frontend",
+    "apps/backend",
+    "apps/ai-engine",
+    "packages/shared"
+  ],
+  "scripts": {
+    "clean": "rm -rf apps/frontend/.next apps/frontend/node_modules/.cache .// && npm install",
+    "clean:cache": "rm -rf apps/frontend/.next apps/frontend/node_modules/.cache",
+    "dev": "npm run dev --workspaces",
+    "dev:frontend": "npm run dev --workspace=apps/frontend",
+    "dev:backend": "npm run dev --workspace=apps/backend",
+    "dev:ai": "npm run dev --workspace=apps/ai-engine",
+    "dev:all": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:ai\"",
+    "start:all": "node scripts/start-all.js",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "test:shared": "npm run test --workspace=packages/shared",
+    "test:frontend": "npm run test --workspace=apps/frontend",
+    "test:backend": "npm run test --workspace=apps/backend",
+    "test:ai": "npm run test --workspace=apps/ai-engine",
+    "test:coverage": "npm run test:coverage --workspaces",
+    "lint": "npm run lint --workspaces",
+    "lint:fix": "npm run lint:fix --workspaces",
+    "type-check": "npm run type-check --workspaces"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.1",
+    "typescript": "^5.3.0"
+  }
+}

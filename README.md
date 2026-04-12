@@ -7,6 +7,7 @@ A **complete, production-ready** platform for student accommodation discovery an
 **Status**: Version 2.0.0 - 85%+ Complete ✅
 
 This project reimplements UniLodge with:
+
 - ✅ **100% TypeScript** - Full type safety throughout
 - ✅ **9 Services** - Complete business logic layer
 - ✅ **10+ API Routes** - RESTful endpoints
@@ -118,44 +119,46 @@ unilodge-v2/
 ## 🔌 API Endpoints (10+)
 
 ```
+
 Authentication:
-  POST   /api/auth/signup
-  POST   /api/auth/login
+POST /api/auth/signup
+POST /api/auth/login
 
 Rooms:
-  GET    /api/rooms
-  GET    /api/rooms/[roomId]
-  POST   /api/rooms
-  PUT    /api/rooms/[roomId]
-  DELETE /api/rooms/[roomId]
+GET /api/rooms
+GET /api/rooms/[roomId]
+POST /api/rooms
+PUT /api/rooms/[roomId]
+DELETE /api/rooms/[roomId]
 
 Bookings:
-  GET    /api/bookings
-  POST   /api/bookings
-  GET    /api/bookings/[bookingId]
-  PUT    /api/bookings/[bookingId]
-  POST   /api/bookings/[bookingId] (payment)
+GET /api/bookings
+POST /api/bookings
+GET /api/bookings/[bookingId]
+PUT /api/bookings/[bookingId]
+POST /api/bookings/[bookingId] (payment)
 
 Reviews:
-  GET    /api/reviews
-  POST   /api/reviews
-  PUT    /api/reviews/[reviewId]
+GET /api/reviews
+POST /api/reviews
+PUT /api/reviews/[reviewId]
 
 Notifications:
-  GET    /api/notifications
-  PATCH  /api/notifications
-  DELETE /api/notifications/[id]
+GET /api/notifications
+PATCH /api/notifications
+DELETE /api/notifications/[id]
 
 Analytics:
-  GET    /api/analytics
+GET /api/analytics
 
 Warden:
-  GET    /api/warden/rooms
-  GET    /api/warden/bookings
+GET /api/warden/rooms
+GET /api/warden/bookings
 
 Contact:
-  POST   /api/contact
-```
+POST /api/contact
+
+````
 
 ---
 
@@ -185,7 +188,7 @@ cp .env.example .env.local
 npm run dev
 
 # Open http://localhost:3000
-```
+````
 
 ---
 
@@ -285,9 +288,9 @@ GitHub Actions workflows in `.github/workflows/`:
 
 - `docs/SETUP.md` - Detailed onboarding guide
 - `docs/API.md` - Backend API reference
-- `docs/guides/frontend-dev.md` - Frontend guide for Aditya
-- `docs/guides/backend-dev.md` - Backend guide for Rachit
-- `docs/guides/ai-integration.md` - AI guide for Saumya
+- `docs/guides/frontend-dev.md` - Frontend guide for Kavya
+- `docs/guides/backend-dev.md` - Backend guide for Aditya Rana
+- `docs/guides/ai-integration.md` - AI guide for Krishna (Project Manager)
 
 ---
 
@@ -351,6 +354,7 @@ test(services): add auth service tests
 ## 📈 Project Progress
 
 ### Completed (v2.0)
+
 - ✅ 9 Backend services
 - ✅ 10+ API endpoints
 - ✅ 11 Frontend pages
@@ -361,6 +365,7 @@ test(services): add auth service tests
 - ✅ Complete documentation
 
 ### Planned (v2.1+)
+
 - ⏳ Hugging Face AI integration
 - ⏳ Stripe payment processing
 - ⏳ Email service integration
@@ -396,7 +401,28 @@ test(services): add auth service tests
 
 ---
 
-## 📄 License
+## � Team Credits
+
+This project was built by a dedicated team of developers:
+
+| Role                            | Team Member     | Responsibilities                                                                                          |
+| ------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------- |
+| **Project Manager & AI Engine** | Krishna         | System architecture, AI engine implementation, OpenRouter integration, design patterns & SOLID principles |
+| **Frontend Engineer**           | Kavya           | React/Next.js development, UI components, frontend routing, state management                              |
+| **Backend Engineer**            | Aditya Rana     | Express.js/Supabase backend, database design, API endpoints, authentication                               |
+| **Documentation & Guides**      | Yashkumar Nimje | Developer guides, setup instructions, API documentation, implementation roadmaps                          |
+| **Architecture Diagrams**       | Swagato Bauri   | System architecture diagrams, class diagrams, data flow diagrams, visual documentation                    |
+
+### Team Setup Guides
+
+- [Frontend Setup](./docs/guides/frontend-dev.md) - For Kavya
+- [Backend Setup](./docs/guides/backend-dev.md) - For Aditya Rana
+- [AI Engine Setup](./docs/guides/ai-integration.md) - For Krishna (Project Manager)
+- [Documentation Guide](./docs/SETUP_GUIDE.md) - Complete setup for all team members
+
+---
+
+## �📄 License
 
 This project is proprietary. All rights reserved.
 
@@ -413,13 +439,13 @@ This project is proprietary. All rights reserved.
 
 ## 🎯 Quick Navigation
 
-| Section | Link |
-|---------|------|
+| Section              | Link                                                      |
+| -------------------- | --------------------------------------------------------- |
 | Backend Architecture | [BACKEND_ARCHITECTURE.md](./docs/BACKEND_ARCHITECTURE.md) |
-| Testing Guide | [TESTING.md](./docs/TESTING.md) |
-| Implementation | [IMPLEMENTATION_GUIDE.md](./docs/IMPLEMENTATION_GUIDE.md) |
-| Deployment | [DEPLOYMENT.md](./docs/DEPLOYMENT.md) |
-| CI/CD Pipeline | [CI_CD_GUIDE.md](./CI_CD_GUIDE.md) |
+| Testing Guide        | [TESTING.md](./docs/TESTING.md)                           |
+| Implementation       | [IMPLEMENTATION_GUIDE.md](./docs/IMPLEMENTATION_GUIDE.md) |
+| Deployment           | [DEPLOYMENT.md](./docs/DEPLOYMENT.md)                     |
+| CI/CD Pipeline       | [CI_CD_GUIDE.md](./CI_CD_GUIDE.md)                        |
 
 ---
 
