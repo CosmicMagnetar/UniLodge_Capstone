@@ -21,22 +21,14 @@
     "jsx": "react-jsx",
     "paths": {
       "@/*": [
-        "./*"
+        "./src/*"
       ]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
   "include": [
-    "*.ts",
-    "*.tsx",
-    "components/**/*",
-    "contexts/**/*",
-    "hooks/**/*",
-    "pages/**/*",
-    "services/**/*",
-    "utils/**/*",
-    "styles/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",

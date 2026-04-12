@@ -2,15 +2,15 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { Database } from './config/database';
-import { errorHandler } from './middleware/errorHandler';
-import authRoutes from './routes/authRoutes';
-import roomRoutes from './routes/roomRoutes';
-import bookingRoutes from './routes/bookingRoutes';
-import analyticsRoutes from './routes/analyticsRoutes';
-import bookingRequestRoutes from './routes/bookingRequestRoutes';
-import contactRoutes from './routes/contactRoutes';
-import notificationRoutes from './routes/notificationRoutes';
+import { Database } from './core/config/database';
+import { errorHandler } from './shared/middleware/errorHandler';
+import authRoutes from './modules/auth/authRoutes';
+import roomRoutes from './modules/rooms/roomRoutes';
+import bookingRoutes from './modules/bookings/bookingRoutes';
+import analyticsRoutes from './modules/analytics/analyticsRoutes';
+import bookingRequestRoutes from './modules/bookings/bookingRequestRoutes';
+import contactRoutes from './modules/contact/contactRoutes';
+import notificationRoutes from './modules/notifications/notificationRoutes';
 
 /**
  * Server — Application Entry Point

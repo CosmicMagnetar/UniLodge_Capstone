@@ -1,8 +1,8 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import Room from '../models/Room';
-import { connectDB } from '../config/database';
+import Room from '../modules/rooms/Room';
+import { connectDB } from '../core/config/database';
 
 dotenv.config();
 

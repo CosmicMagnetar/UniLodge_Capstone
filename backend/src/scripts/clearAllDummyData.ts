@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
-import Room from '../models/Room';
+import Room from '../modules/rooms/Room';
 
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '../../.env') });
