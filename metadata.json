@@ -1,0 +1,5 @@
+{
+  "name": "CampusStays AI Booking",
+  "description": "An AI-powered booking platform for college accommodations. It features AI-driven dynamic pricing for admins and a dual-role AI Agent to assist both guests and administrators in managing bookings and inquiries.",
+  "requestFramePermissions": []
+}
