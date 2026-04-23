@@ -92,7 +92,7 @@ export class OpenRouterService {
 
       for await (const chunk of response.data) {
         const text = chunk.toString()
-        const lines = text.split('\n').filter((line) => line.length > 0)
+        const lines = text.split('\n').filter((line: string) => line.length > 0)
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {

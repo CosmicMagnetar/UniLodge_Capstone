@@ -1,16 +1,10 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import User from '../models/User';
 import Room from '../models/Room';
 
-// Define __dirname for ES module
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 // Load environment variables from backend .env file
-dotenv.config({ path: `${__dirname}/../../.env` });
+dotenv.config({ path: `${import.meta.dirname}/../../.env` });
 
 export async function connectDB() {
   try {

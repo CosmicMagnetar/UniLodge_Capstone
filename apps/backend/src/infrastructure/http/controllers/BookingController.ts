@@ -6,11 +6,11 @@
  */
 
 import { Response } from 'express';
-import { AuthRequest } from '../types';
-import { CreateBookingUseCase, CreateBookingInput } from '../application/booking/CreateBookingUseCase';
-import { ConfirmBookingUseCase } from '../application/booking/ConfirmBookingUseCase';
-import { IBookingRepository } from '../domain/repositories';
-import { ErrorHandler, AppError, ValidationError, AuthorizationError, NotFoundError } from '../shared/errors/AppError';
+import { AuthRequest } from '../../../types';
+import { CreateBookingUseCase, CreateBookingInput } from '../../../application/booking/CreateBookingUseCase';
+import { ConfirmBookingUseCase } from '../../../application/booking/ConfirmBookingUseCase';
+import { IBookingRepository } from '../../../domain/repositories';
+import { ErrorHandler, AppError, ValidationError, AuthorizationError, NotFoundError } from '../../../shared/errors/AppError';
 
 /**
  * CONTROLLER: BookingController

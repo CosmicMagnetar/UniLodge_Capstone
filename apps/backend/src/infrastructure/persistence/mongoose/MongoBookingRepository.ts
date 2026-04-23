@@ -5,11 +5,11 @@
  */
 
 import { Model } from 'mongoose';
-import { Booking } from '../domain/entities/Booking';
-import { DateRange } from '../domain/value-objects/DateRange';
-import { Price } from '../domain/value-objects/Price';
-import { IBookingRepository } from '../domain/repositories';
-import { DatabaseError } from '../shared/errors/AppError';
+import { Booking } from '../../../domain/entities/Booking';
+import { DateRange } from '../../../domain/value-objects/DateRange';
+import { Price } from '../../../domain/value-objects/Price';
+import { IBookingRepository } from '../../../domain/repositories';
+import { DatabaseError } from '../../../shared/errors/AppError';
 
 /**
  * REPOSITORY IMPLEMENTATION: MongoBookingRepository

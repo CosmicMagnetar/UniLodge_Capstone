@@ -3,8 +3,8 @@
  */
 
 import { Model } from 'mongoose';
-import { IUserRepository } from '../domain/repositories';
-import { DatabaseError } from '../shared/errors/AppError';
+import { IUserRepository } from '../../../domain/repositories';
+import { DatabaseError } from '../../../shared/errors/AppError';
 
 export class MongoUserRepository implements IUserRepository {
   constructor(private userModel: Model<any>) {}

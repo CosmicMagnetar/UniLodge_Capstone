@@ -1,227 +1,174 @@
-import express, { Router, Request, Response } from 'express'
-import { OpenRouterService } from '@unilodge/ai-engine'
+import express, { Router, Request, Response } from 'express';
+import axios from 'axios';
+import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth';
+import { AuthRequest } from '../types';
 
-const router: Router = express.Router()
+const router: Router = express.Router();
 
-// Initialize OpenRouter service
-const aiService = new OpenRouterService({
-  apiKey: process.env.OPENROUTER_API_KEY || '',
-  model: process.env.OPENROUTER_MODEL || 'openai/gpt-3.5-turbo',
-  temperature: parseFloat(process.env.OPENROUTER_TEMPERATURE || '0.7'),
-})
+const AI_ENGINE_URL = process.env.AI_ENGINE_URL || 'http://localhost:3002';
+const AI_TIMEOUT_MS = 120000;
 
 /**
  * POST /api/chat/message
- * Send a message to the AI chatbot
+ * Proxy chat messages to the AI microservice.
+ * The backend no longer imports AI libraries directly.
  */
-router.post('/message', async (req: Request, res: Response) => {
+router.post('/message', optionalAuthMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { message, context } = req.body
+    const { message, context } = req.body;
 
-    // Validate input
     if (!message || typeof message !== 'string') {
       return res.status(400).json({
         error: 'Message is required and must be a string',
-      })
+      });
     }
 
-    // Build prompt with context
-    let prompt = message
-    if (context) {
-      prompt = `Context: ${context}\n\nUser: ${message}`
-    }
+    const userId = req.user?.id || 'anonymous';
+    const role = req.user?.role || 'GUEST';
 
-    // Generate response
-    const response = await aiService.generateText(prompt)
+    const response = await axios.post(
+      `${AI_ENGINE_URL}/api/chat`,
+      {
+        message: context ? `Context: ${context}\n\nUser: ${message}` : message,
+        userId,
+        role,
+      },
+      { timeout: AI_TIMEOUT_MS }
+    );
 
     res.json({
       success: true,
       message,
-      response,
+      response: response.data.response,
+      model: response.data.model,
       timestamp: new Date().toISOString(),
-    })
-  } catch (error) {
-    console.error('Chat error:', error)
+    });
+  } catch (error: any) {
+    console.error('Chat proxy error:', error.message);
+
+    // Handle AI service unavailable
+    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+      return res.status(503).json({
+        error: 'AI service is temporarily unavailable. Please try again later.',
+        fallback: true,
+      });
+    }
+
+    // Handle rate limit from AI service
+    if (error.response?.status === 429) {
+      return res.status(429).json({
+        error: error.response.data?.error || 'Rate limit exceeded',
+        retryAfter: error.response.data?.retryAfter,
+      });
+    }
+
     res.status(500).json({
       error: 'Failed to generate response',
       message: error instanceof Error ? error.message : 'Unknown error',
-    })
+    });
   }
-})
-
-/**
- * POST /api/chat/stream
- * Send a message and stream the response
- */
-router.post('/stream', async (req: Request, res: Response) => {
-  try {
-    const { message, context } = req.body
-
-    if (!message || typeof message !== 'string') {
-      return res.status(400).json({
-        error: 'Message is required and must be a string',
-      })
-    }
-
-    // Set up streaming response
-    res.setHeader('Content-Type', 'text/event-stream')
-    res.setHeader('Cache-Control', 'no-cache')
-    res.setHeader('Connection', 'keep-alive')
-
-    // Build prompt
-    let prompt = message
-    if (context) {
-      prompt = `Context: ${context}\n\nUser: ${message}`
-    }
-
-    // Stream response
-    let fullResponse = ''
-    for await (const chunk of aiService.generateTextStream(prompt)) {
-      fullResponse += chunk
-      res.write(
-        `data: ${JSON.stringify({ chunk, isDone: false })}\n\n`
-      )
-    }
-
-    // Send completion event
-    res.write(`data: ${JSON.stringify({ isDone: true, fullResponse })}\n\n`)
-    res.end()
-  } catch (error) {
-    console.error('Stream error:', error)
-    res.status(500).json({
-      error: 'Failed to stream response',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    })
-  }
-})
+});
 
 /**
  * POST /api/chat/room-recommendations
- * Get AI recommendations for room matching
+ * Proxy room recommendation requests to AI service.
  */
-router.post('/room-recommendations', async (req: Request, res: Response) => {
+router.post('/room-recommendations', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { budget, preferences, location } = req.body
+    const { budget, preferences, location } = req.body;
 
-    const prompt = `Based on the following criteria, suggest the best student accommodation:
+    const message = `Based on the following criteria, suggest the best student accommodation:
 - Budget: $${budget} per month
 - Preferences: ${preferences?.join(', ') || 'any'}
 - Location: ${location || 'any'}
 
-Please provide 3-5 recommendations with pros and cons for each.`
+Please provide 3-5 recommendations with pros and cons for each.`;
 
-    const response = await aiService.generateText(prompt)
+    const response = await axios.post(
+      `${AI_ENGINE_URL}/api/chat`,
+      {
+        message,
+        userId: req.user?.id || 'anonymous',
+        role: req.user?.role || 'GUEST',
+      },
+      { timeout: AI_TIMEOUT_MS }
+    );
 
     res.json({
       success: true,
-      recommendations: response,
+      recommendations: response.data.response,
       timestamp: new Date().toISOString(),
-    })
-  } catch (error) {
-    console.error('Recommendation error:', error)
+    });
+  } catch (error: any) {
+    if (error.code === 'ECONNREFUSED') {
+      return res.status(503).json({ error: 'AI service is temporarily unavailable.' });
+    }
     res.status(500).json({
       error: 'Failed to generate recommendations',
       message: error instanceof Error ? error.message : 'Unknown error',
-    })
+    });
   }
-})
+});
 
 /**
  * POST /api/chat/analyze-room
- * Analyze a specific room using AI
+ * Proxy room analysis to AI service.
  */
-router.post('/analyze-room', async (req: Request, res: Response) => {
+router.post('/analyze-room', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { roomData, userProfile } = req.body
+    const { roomData, userProfile } = req.body;
 
     if (!roomData) {
-      return res.status(400).json({ error: 'Room data is required' })
+      return res.status(400).json({ error: 'Room data is required' });
     }
 
-    const prompt = `Analyze this student room listing and provide insights:
-
-Room Details:
+    const message = `Analyze this student room listing:
 - Name: ${roomData.name}
 - Price: $${roomData.pricePerNight}/night
 - Capacity: ${roomData.capacity} people
 - Amenities: ${roomData.amenities?.join(', ') || 'none'}
 - Location: ${roomData.location || 'unknown'}
+${userProfile ? `\nUser Budget: $${userProfile.budget}, Preferences: ${userProfile.preferences?.join(', ')}` : ''}
 
-${
-  userProfile
-    ? `User Profile:\n- Budget: $${userProfile.budget}\n- Preferences: ${userProfile.preferences?.join(', ')}`
-    : ''
-}
+Provide: Suitability score (1-10), value assessment, concerns, and recommendations.`;
 
-Provide:
-1. Suitability score (1-10)
-2. Value for money assessment
-3. Potential concerns
-4. Recommendations`
-
-    const analysis = await aiService.generateText(prompt)
+    const response = await axios.post(
+      `${AI_ENGINE_URL}/api/chat`,
+      {
+        message,
+        userId: req.user?.id || 'anonymous',
+        role: 'ADMIN',
+      },
+      { timeout: AI_TIMEOUT_MS }
+    );
 
     res.json({
       success: true,
-      analysis,
+      analysis: response.data.response,
       timestamp: new Date().toISOString(),
-    })
-  } catch (error) {
-    console.error('Analysis error:', error)
+    });
+  } catch (error: any) {
+    if (error.code === 'ECONNREFUSED') {
+      return res.status(503).json({ error: 'AI service is temporarily unavailable.' });
+    }
     res.status(500).json({
       error: 'Failed to analyze room',
       message: error instanceof Error ? error.message : 'Unknown error',
-    })
+    });
   }
-})
+});
 
 /**
- * GET /api/chat/models
- * List available models
+ * GET /api/chat/health
+ * Check AI service health.
  */
-router.get('/models', async (req: Request, res: Response) => {
+router.get('/health', async (_req: Request, res: Response) => {
   try {
-    const models = await aiService.getAvailableModels()
-    res.json({
-      success: true,
-      models,
-      currentModel: process.env.OPENROUTER_MODEL || 'openai/gpt-3.5-turbo',
-    })
-  } catch (error) {
-    console.error('Models error:', error)
-    res.status(500).json({
-      error: 'Failed to fetch models',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    })
+    const response = await axios.get(`${AI_ENGINE_URL}/api/health`, { timeout: 5000 });
+    res.json({ aiService: response.data });
+  } catch {
+    res.json({ aiService: { status: 'unavailable' } });
   }
-})
+});
 
-/**
- * POST /api/chat/switch-model
- * Switch AI model for subsequent requests
- */
-router.post('/switch-model', async (req: Request, res: Response) => {
-  try {
-    const { model } = req.body
-
-    if (!model) {
-      return res.status(400).json({ error: 'Model name is required' })
-    }
-
-    // In production, you might want to validate the model exists
-    process.env.OPENROUTER_MODEL = model
-
-    res.json({
-      success: true,
-      message: `Switched to model: ${model}`,
-      currentModel: model,
-    })
-  } catch (error) {
-    console.error('Switch model error:', error)
-    res.status(500).json({
-      error: 'Failed to switch model',
-    })
-  }
-})
-
-export default router
+export default router;

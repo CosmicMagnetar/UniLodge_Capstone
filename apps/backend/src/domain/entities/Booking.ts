@@ -109,6 +109,14 @@ export class Booking {
     return this.paymentStatus;
   }
 
+  getPaymentDate(): Date | undefined {
+    return this.paymentDate;
+  }
+
+  getPaymentMethod(): string | undefined {
+    return this.paymentMethod;
+  }
+
   getCreatedAt(): Date {
     return this.createdAt;
   }
@@ -219,7 +227,7 @@ export class Booking {
   isWithinCheckInWindow(): boolean {
     const now = new Date();
     const checkInDay = new Date(this.dateRange.checkIn);
-    const checkOutDay = new Date(this.dateRange.checkInDate);
+    const checkOutDay = new Date(this.dateRange.checkIn);
     checkOutDay.setHours(23, 59, 59, 999);
 
     return now >= checkInDay && now <= checkOutDay;

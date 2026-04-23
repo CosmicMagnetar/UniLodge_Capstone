@@ -4,17 +4,17 @@
  * SINGLE RESPONSIBILITY: Only creates bookings
  */
 
-import { Booking } from '../domain/entities/Booking';
-import { Room } from '../domain/entities/Room';
-import { DateRange } from '../domain/value-objects/DateRange';
-import { Price } from '../domain/value-objects/Price';
+import { Booking } from '../../domain/entities/Booking';
+import { Room } from '../../domain/entities/Room';
+import { DateRange } from '../../domain/value-objects/DateRange';
+import { Price } from '../../domain/value-objects/Price';
 import {
   IBookingRepository,
   IRoomRepository,
   IUserRepository,
-} from '../domain/repositories';
-import { PricingService } from '../domain/services/PricingService';
-import { AvailabilityService } from '../domain/services/AvailabilityService';
+} from '../../domain/repositories';
+import { PricingService } from '../../domain/services/PricingService';
+import { AvailabilityService } from '../../domain/services/AvailabilityService';
 
 /**
  * INPUT: DTO for creating booking

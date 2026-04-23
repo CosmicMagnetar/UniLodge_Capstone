@@ -44,15 +44,17 @@ export const api = {
       body: { email, password },
     }),
 
-  signup: (name: string, email: string, password: string) =>
+  signup: (name: string, email: string, password: string, universityDomain?: string, role?: string) =>
     request<{ message: string; token: string; user: any }>('/auth/register', {
       method: 'POST',
-      body: { name, email, password },
+      body: { name, email, password, universityDomain, role },
     }),
 
   getMe: () => request<any>('/auth/me'),
 
   getWardens: () => request<any[]>('/auth/wardens'),
+
+  getUniversities: () => request<{ _id: string; name: string; domain: string }[]>('/auth/universities'),
 
   logout: () =>
     request<any>('/auth/logout', {

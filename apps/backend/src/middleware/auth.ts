@@ -96,6 +96,43 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
   }
 }
 
+export async function optionalAuthMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    let accessToken = req.cookies?.accessToken;
+    if (!accessToken && req.headers.authorization?.startsWith('Bearer ')) {
+      accessToken = req.headers.authorization.split(' ')[1];
+    }
+
+    if (!accessToken) {
+      req.user = { id: 'anonymous', email: '', name: 'Guest', role: 'GUEST', createdAt: '' };
+      return next();
+    }
+
+    try {
+      const decoded = jwt.verify(accessToken, JWT_SECRET) as JWTPayload;
+      const user = await User.findById(decoded.userId).select('-password');
+      if (user) {
+        req.user = {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          role: user.role as any,
+          password: undefined,
+          createdAt: user.createdAt.toString(),
+        };
+      } else {
+        req.user = { id: 'anonymous', email: '', name: 'Guest', role: 'GUEST', createdAt: '' };
+      }
+    } catch (e) {
+      req.user = { id: 'anonymous', email: '', name: 'Guest', role: 'GUEST', createdAt: '' };
+    }
+    next();
+  } catch (error) {
+    req.user = { id: 'anonymous', email: '', name: 'Guest', role: 'GUEST', createdAt: '' };
+    next();
+  }
+}
+
 export function adminOnly(req: AuthRequest, res: Response, next: NextFunction) {
   if (req.user?.role !== 'ADMIN') {
     return res.status(403).json({ error: 'Admin access required' });
@@ -122,6 +159,28 @@ export function adminOrWardenOnly(req: AuthRequest, res: Response, next: NextFun
     return res.status(403).json({ error: 'Admin or Warden access required' });
   }
   next();
+}
+
+export function studentOnly(req: AuthRequest, res: Response, next: NextFunction) {
+  if (req.user?.role !== 'STUDENT') {
+    return res.status(403).json({ error: 'Student access required' });
+  }
+  next();
+}
+
+/**
+ * Generic role guard factory — accepts any number of allowed roles.
+ * Usage: router.get('/route', authMiddleware, requireRole('ADMIN', 'WARDEN'), handler)
+ */
+export function requireRole(...roles: string[]) {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.user?.role || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        error: `Access restricted to: ${roles.join(', ')}`,
+      });
+    }
+    next();
+  };
 }
 
 export function generateTokens(userId: string, email: string, role: string) {

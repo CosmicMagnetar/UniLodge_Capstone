@@ -3,10 +3,10 @@
  */
 
 import { Model } from 'mongoose';
-import { Room } from '../domain/entities/Room';
-import { Price } from '../domain/value-objects/Price';
-import { IRoomRepository } from '../domain/repositories';
-import { DatabaseError } from '../shared/errors/AppError';
+import { Room } from '../../../domain/entities/Room';
+import { Price } from '../../../domain/value-objects/Price';
+import { IRoomRepository } from '../../../domain/repositories';
+import { DatabaseError } from '../../../shared/errors/AppError';
 
 export class MongoRoomRepository implements IRoomRepository {
   constructor(private roomModel: Model<any>) {}

@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Heart, Home, Menu, X } from 'lucide-react';
 
-type Role = 'ADMIN' | 'WARDEN' | 'STUDENT';
+type Role = 'ADMIN' | 'WARDEN' | 'STUDENT' | 'GUEST';
 
 const Role = {
   ADMIN: 'ADMIN' as Role,
   WARDEN: 'WARDEN' as Role,
-  STUDENT: 'STUDENT' as Role
+  STUDENT: 'STUDENT' as Role,
+  GUEST: 'GUEST' as Role,
 };
 
 type User = {

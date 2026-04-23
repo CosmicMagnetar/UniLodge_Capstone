@@ -2,24 +2,53 @@ import { Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import User from '../models/User';
+import University from '../models/University';
 import { AuthRequest } from '../types';
 import { generateTokens } from '../middleware/auth';
 
+const VALID_SELF_REGISTER_ROLES = ['STUDENT', 'GUEST'];
+
 export const register = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, universityDomain, role } = req.body;
+
+    // Validate role
+    const selectedRole = role && VALID_SELF_REGISTER_ROLES.includes(role) ? role : 'GUEST';
+
+    // Look up university by domain
+    let universityId = undefined;
+    if (universityDomain) {
+      const university = await University.findOne({ domain: universityDomain.toLowerCase(), isRegistered: true });
+      if (!university) {
+        return res.status(400).json({
+          error: 'UNIVERSITY_NOT_REGISTERED',
+          message: 'Your university is not registered on our platform.',
+          contactEmail: 'krishna.2024@nst.rishihood.edu.in',
+        });
+      }
+      universityId = university._id;
+    } else {
+      // Try auto-detecting from email domain
+      const emailDomain = email.split('@')[1];
+      if (emailDomain) {
+        const university = await University.findOne({ domain: emailDomain.toLowerCase(), isRegistered: true });
+        if (university) {
+          universityId = university._id;
+        }
+      }
+    }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    // Don't hash password manually - the User model's pre-save hook will do it
     const user = new User({
       name,
       email,
-      password, // Pass plain password, model will hash it
-      role: 'GUEST',
+      password,
+      role: selectedRole,
+      university: universityId,
     });
 
     await user.save();
@@ -30,19 +59,18 @@ export const register = async (req: AuthRequest, res: Response) => {
       user.role
     );
 
-    // Set tokens in cookies
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(201).json({
@@ -65,7 +93,7 @@ export const login = async (req: AuthRequest, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate('university', 'name domain');
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -82,19 +110,18 @@ export const login = async (req: AuthRequest, res: Response) => {
       user.role
     );
 
-    // Set tokens in cookies
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.json({
@@ -105,6 +132,7 @@ export const login = async (req: AuthRequest, res: Response) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        university: user.university || null,
       },
     });
   } catch (error) {
@@ -161,7 +189,7 @@ export const getMe = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.id).select('-password').populate('university', 'name domain');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -171,6 +199,7 @@ export const getMe = async (req: AuthRequest, res: Response) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      university: user.university || null,
       building: user.building,
       organization: user.organization,
       createdAt: user.createdAt,
@@ -197,5 +226,15 @@ export const getWardens = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error('Get wardens error:', error);
     res.status(500).json({ error: 'Failed to fetch wardens' });
+  }
+};
+
+export const getUniversities = async (_req: AuthRequest, res: Response) => {
+  try {
+    const universities = await University.find({ isRegistered: true }).select('name domain');
+    res.json(universities);
+  } catch (error) {
+    console.error('Get universities error:', error);
+    res.status(500).json({ error: 'Failed to fetch universities' });
   }
 };

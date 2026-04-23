@@ -1,4 +1,6 @@
-export const SYSTEM_PROMPTS = {
+export { getSystemPrompt, SYSTEM_PROMPTS as ROLE_PROMPTS } from './systemPrompts.js';
+
+export const LEGACY_PROMPTS = {
   priceAdvisor: `You are a pricing expert for campus accommodations.
 Analyze room details and suggest optimal pricing based on:
 - Room type and amenities
@@ -18,7 +20,7 @@ Consider budget, room type, amenities, and availability.`,
 }
 
 export function getPriceAdvisorPrompt(roomDetails: Record<string, any>): string {
-  return `${SYSTEM_PROMPTS.priceAdvisor}
+  return `${LEGACY_PROMPTS.priceAdvisor}
 
 Room Details:
 - Type: ${roomDetails.type}
@@ -26,3 +28,4 @@ Room Details:
 - Amenities: ${roomDetails.amenities?.join(', ') || 'None'}
 - Capacity: ${roomDetails.capacity || 'N/A'}`
 }
+

@@ -5,8 +5,10 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
-  role: 'ADMIN' | 'WARDEN' | 'GUEST';
+  role: 'ADMIN' | 'WARDEN' | 'STUDENT' | 'GUEST';
+  university?: mongoose.Types.ObjectId;
   building?: string;
+  /** @deprecated Use university ref instead */
   organization?: string;
   createdAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -32,13 +34,19 @@ const UserSchema = new Schema<IUser>({
   },
   role: {
     type: String,
-    enum: ['ADMIN', 'WARDEN', 'GUEST'],
+    enum: ['ADMIN', 'WARDEN', 'STUDENT', 'GUEST'],
     default: 'GUEST',
+  },
+  university: {
+    type: Schema.Types.ObjectId,
+    ref: 'University',
+    required: false,
   },
   building: {
     type: String,
     required: false,
   },
+  /** @deprecated Use university ref instead */
   organization: {
     type: String,
     required: false,

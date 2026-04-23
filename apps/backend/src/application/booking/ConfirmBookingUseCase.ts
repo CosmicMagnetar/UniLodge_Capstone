@@ -2,7 +2,7 @@
  * ConfirmBookingUseCase - Application Service
  */
 
-import { IBookingRepository } from '../domain/repositories';
+import { IBookingRepository } from '../../domain/repositories';
 
 export interface ConfirmBookingInput {
   bookingId: string;

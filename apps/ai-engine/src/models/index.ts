@@ -1,9 +1,9 @@
 // AI Model Definitions - OpenRouter
 export const MODELS = {
-  RECOMMENDATION: 'meta-llama/llama-2-7b-chat',
-  CHAT: 'openai/gpt-3.5-turbo',
-  ADVANCED: 'openai/gpt-4',
-  SENTIMENT: 'meta-llama/llama-2-7b-chat',
+  RECOMMENDATION: 'google/gemma-4-31b-it:free',
+  CHAT: 'nvidia/nemotron-3-super-120b-a12b:free',
+  ADVANCED: 'google/gemma-4-31b-it:free',
+  SENTIMENT: 'nvidia/nemotron-3-super-120b-a12b:free',
 } as const;
 
 export type ModelType = typeof MODELS[keyof typeof MODELS];
