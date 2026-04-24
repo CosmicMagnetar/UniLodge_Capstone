@@ -8,6 +8,9 @@ import AiAgentChat from '@/components/pages/AiAgentChat';
 import { GridBackground } from '@/components/ui/GlowingCard';
 import { Search, Filter, MapPin, Calendar, X, CheckCircle, Clock, FileText, Map, Utensils, User as UserIcon, AlertCircle } from 'lucide-react';
 import { useToast } from '@/components/ToastProvider';
+import { IdentityQR } from '@/components/dashboard/IdentityQR';
+import { MessPaymentQR } from '@/components/dashboard/MessPaymentQR';
+import { CampusMap } from '@/components/dashboard/CampusMap';
 
 export type GuestDashboardProps = { 
     user: User; 
@@ -193,6 +196,8 @@ export const GuestDashboard: React.FC<GuestDashboardProps> = ({ user, rooms }) =
         return 0;
     });
 
+    const activeBooking = myBookings.find(b => b.status === 'Confirmed' && !b.checkOutCompleted);
+
     return (
         <div className="min-h-screen bg-slate-50 pb-20 pt-24">
             <AiAgentChat userRole={Role.GUEST} />
@@ -201,22 +206,36 @@ export const GuestDashboard: React.FC<GuestDashboardProps> = ({ user, rooms }) =
             <div className="mb-12">
                 <GridBackground
                     title={`Welcome, ${user.name}`}
-                    description="Find your perfect campus accommodation with our verified listings."
+                    description={activeBooking ? "Welcome to your stay. View your digital passes and room details below." : "Find your perfect campus accommodation with our verified listings."}
                     showAvailability={false}
                     className="w-full max-w-7xl mx-auto"
                     action={
-                        <button 
-                            onClick={() => setShowRequestModal(true)}
-                            className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold shadow-lg shadow-blue-900/20 transition-all hover:-translate-y-1 active:translate-y-0"
-                        >
-                            Submit Guest Request
-                        </button>
+                        !activeBooking && (
+                            <button 
+                                onClick={() => setShowRequestModal(true)}
+                                className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold shadow-lg shadow-blue-900/20 transition-all hover:-translate-y-1 active:translate-y-0"
+                            >
+                                Submit Guest Request
+                            </button>
+                        )
                     }
                 />
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-30">
-                {/* My Bookings Section */}
+                {activeBooking ? (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                        <div className="lg:col-span-1 space-y-8">
+                            <IdentityQR bookingId={activeBooking.id} userName={user.name} />
+                            <MessPaymentQR studentId={user.id} />
+                        </div>
+                        <div className="lg:col-span-2">
+                            <CampusMap universityName={(activeBooking.room as any)?.university || 'Campus'} />
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        {/* My Bookings Section */}
                 {myBookings.length > 0 && (
                     <Card className="p-8 shadow-xl border-none mb-12 bg-white/95 backdrop-blur-sm">
                         <div className="flex items-center justify-between mb-6">
@@ -389,33 +408,7 @@ export const GuestDashboard: React.FC<GuestDashboardProps> = ({ user, rooms }) =
 
                                     {/* Map Section */}
                                     <div className="h-full min-h-[300px] bg-slate-100 rounded-xl overflow-hidden relative">
-                                        <div className="absolute inset-0 flex items-center justify-center bg-slate-200">
-                                            <div className="text-center">
-                                                <MapPin className="mx-auto h-12 w-12 text-slate-400 mb-2" />
-                                                <p className="text-slate-500 font-medium">University Map</p>
-                                                <p className="text-xs text-slate-400">{(selectedBooking.room as any)?.university || 'Campus Location'}</p>
-                                            </div>
-                                        </div>
-                                        {/* Placeholder for actual map integration */}
-                                        <iframe 
-                                            width="100%" 
-                                            height="100%" 
-                                            frameBorder="0" 
-                                            style={{ border: 0, opacity: 0.6 }}
-                                            src={`https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${encodeURIComponent((selectedBooking.room as any)?.university || 'University')}`}
-                                            allowFullScreen
-                                        ></iframe>
-                                        <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-sm">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
-                                                    <Map size={20} />
-                                                </div>
-                                                <div>
-                                                    <p className="font-bold text-slate-900 text-sm">Campus Navigation</p>
-                                                    <p className="text-xs text-slate-500">Get directions to your room and mess</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <CampusMap universityName={(selectedBooking.room as any)?.university || 'Campus Location'} />
                                     </div>
                                 </div>
                             </div>
@@ -658,6 +651,8 @@ export const GuestDashboard: React.FC<GuestDashboardProps> = ({ user, rooms }) =
                         />
                     </div>
                 </div>
+                    </>
+                )}
             </div>
 
             {/* Guest Request Modal */}

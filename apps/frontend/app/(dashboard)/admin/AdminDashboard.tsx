@@ -6,7 +6,7 @@ import { Card, Badge, Button } from '@/components/pages/ui';
 import { useToast } from '@/components/ToastProvider';
 import { PriceSuggestionTool } from '@/components/pages/PriceSuggestionTool';
 import AiAgentChat  from '@/components/pages/AiAgentChat';
-import { Users, Home, CreditCard, CheckCircle, XCircle, Edit, Trash2, TrendingUp, Calendar, FileText } from 'lucide-react';
+import { Users, Home, CreditCard, CheckCircle, XCircle, Edit, Trash2, TrendingUp, Calendar, FileText, Settings, Upload, Save } from 'lucide-react';
 
 export type AdminDashboardProps = { 
     user: User; 
@@ -20,7 +20,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, bookings }
     const [, setPendingRooms] = useState<Room[]>([]);
     const [bookingRequests, setBookingRequests] = useState<any[]>([]);
     const [allBookings, setAllBookings] = useState<Booking[]>([]);
-    const [activeTab, setActiveTab] = useState<'wardens' | 'rooms' | 'payments' | 'requests'>('requests');
+    const [activeTab, setActiveTab] = useState<'wardens' | 'rooms' | 'payments' | 'requests' | 'settings'>('requests');
     const [requestFilter, setRequestFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
     const [paymentFilter, setPaymentFilter] = useState<'all' | 'paid' | 'pending'>('all');
 
@@ -231,6 +231,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, bookings }
                                                 {bookingRequests.filter(r => r.status === 'pending').length}
                                             </Badge>
                                         )}
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('settings')}
+                                        className={`flex-1 py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${
+                                            activeTab === 'settings'
+                                                ? 'border-blue-500 text-blue-600 bg-blue-50/50'
+                                                : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                                        }`}
+                                    >
+                                        <Settings size={18} />
+                                        Settings
                                     </button>
                                 </nav>
                             </div>
@@ -446,6 +457,100 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, bookings }
                                                 ))}
                                             </div>
                                         )}
+                                    </div>
+                                )}
+
+                                {/* Settings Tab */}
+                                {activeTab === 'settings' && (
+                                    <div>
+                                        <div className="flex items-center justify-between mb-6">
+                                            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                                <Settings size={20} className="text-blue-600" />
+                                                Campus Assets Configuration
+                                            </h2>
+                                        </div>
+                                        <div className="space-y-6">
+                                            <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">
+                                                <h3 className="font-bold text-slate-900 mb-2">Custom Campus Map</h3>
+                                                <p className="text-sm text-slate-500 mb-4">Upload a custom campus map image. If left blank, the system will use an interactive Google Map.</p>
+                                                <input 
+                                                    type="file" 
+                                                    accept="image/*"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            const reader = new FileReader();
+                                                            reader.onloadend = () => {
+                                                                localStorage.setItem('uni_settings_map', reader.result as string);
+                                                                success('Custom map saved successfully!');
+                                                            };
+                                                            reader.readAsDataURL(file);
+                                                        }
+                                                    }}
+                                                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                                />
+                                                {typeof window !== 'undefined' && localStorage.getItem('uni_settings_map') && (
+                                                    <div className="mt-4 flex gap-4 items-center">
+                                                        <img src={localStorage.getItem('uni_settings_map')!} alt="Custom Map" className="h-20 w-32 object-cover rounded shadow" />
+                                                        <Button variant="outline" onClick={() => { localStorage.removeItem('uni_settings_map'); window.location.reload(); }} className="text-red-500 hover:text-red-600 hover:bg-red-50">Remove</Button>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">
+                                                <h3 className="font-bold text-slate-900 mb-2">Custom Gate Pass QR</h3>
+                                                <p className="text-sm text-slate-500 mb-4">Upload a static QR code image for gate passes. If left blank, a dynamic QR code will be generated per booking.</p>
+                                                <input 
+                                                    type="file" 
+                                                    accept="image/*"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            const reader = new FileReader();
+                                                            reader.onloadend = () => {
+                                                                localStorage.setItem('uni_settings_gate_qr', reader.result as string);
+                                                                success('Custom Gate Pass QR saved successfully!');
+                                                            };
+                                                            reader.readAsDataURL(file);
+                                                        }
+                                                    }}
+                                                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                                                />
+                                                {typeof window !== 'undefined' && localStorage.getItem('uni_settings_gate_qr') && (
+                                                    <div className="mt-4 flex gap-4 items-center">
+                                                        <img src={localStorage.getItem('uni_settings_gate_qr')!} alt="Gate QR" className="h-20 w-20 object-cover rounded shadow" />
+                                                        <Button variant="outline" onClick={() => { localStorage.removeItem('uni_settings_gate_qr'); window.location.reload(); }} className="text-red-500 hover:text-red-600 hover:bg-red-50">Remove</Button>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">
+                                                <h3 className="font-bold text-slate-900 mb-2">Custom Mess Food QR</h3>
+                                                <p className="text-sm text-slate-500 mb-4">Upload a static QR code image for mess food. If left blank, a dynamic QR code will be generated per student.</p>
+                                                <input 
+                                                    type="file" 
+                                                    accept="image/*"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            const reader = new FileReader();
+                                                            reader.onloadend = () => {
+                                                                localStorage.setItem('uni_settings_mess_qr', reader.result as string);
+                                                                success('Custom Mess QR saved successfully!');
+                                                            };
+                                                            reader.readAsDataURL(file);
+                                                        }
+                                                    }}
+                                                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                                                />
+                                                {typeof window !== 'undefined' && localStorage.getItem('uni_settings_mess_qr') && (
+                                                    <div className="mt-4 flex gap-4 items-center">
+                                                        <img src={localStorage.getItem('uni_settings_mess_qr')!} alt="Mess QR" className="h-20 w-20 object-cover rounded shadow" />
+                                                        <Button variant="outline" onClick={() => { localStorage.removeItem('uni_settings_mess_qr'); window.location.reload(); }} className="text-red-500 hover:text-red-600 hover:bg-red-50">Remove</Button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
                             </div>
