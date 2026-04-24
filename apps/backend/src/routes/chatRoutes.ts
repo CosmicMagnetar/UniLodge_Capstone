@@ -137,7 +137,7 @@ Provide: Suitability score (1-10), value assessment, concerns, and recommendatio
       {
         message,
         userId: req.user?.id || 'anonymous',
-        role: 'ADMIN',
+        role: req.user?.role || 'GUEST',
       },
       { timeout: AI_TIMEOUT_MS }
     );

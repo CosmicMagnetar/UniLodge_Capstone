@@ -1,6 +1,7 @@
 /**
  * VectorStoreService — Provider-agnostic vector database interface.
- * Default implementation uses Pinecone. Can be swapped for Qdrant, Supabase Vector, etc.
+ * Default implementation uses @xenova/transformers for local embeddings.
+ * Can be swapped for Qdrant, Supabase Vector, etc.
  */
 
 export interface VectorDocument {
@@ -23,17 +24,81 @@ export interface IVectorStore {
   deleteDocument(id: string): Promise<void>;
 }
 
+// ── Embedding Engine ───────────────────────────────────────────────────────
+
 /**
- * Simple embedding function using character frequency as a poor-man's embedding.
- * Replace with OpenRouter/OpenAI embedding API in production.
+ * Lazy-loaded transformer pipeline for local semantic embeddings.
+ * Uses all-MiniLM-L6-v2 (384 dims) — runs on CPU, no GPU required.
+ * The model downloads once (~23MB) and is cached in ~/.cache/huggingface.
  */
-function simpleEmbed(text: string, dims: number = 384): number[] {
-  const embedding = new Array(dims).fill(0);
-  const lower = text.toLowerCase();
-  for (let i = 0; i < lower.length; i++) {
-    embedding[lower.charCodeAt(i) % dims] += 1;
+let _pipeline: any = null;
+let _pipelineLoading: Promise<any> | null = null;
+
+async function getEmbeddingPipeline(): Promise<any> {
+  if (_pipeline) return _pipeline;
+
+  if (!_pipelineLoading) {
+    _pipelineLoading = (async () => {
+      try {
+        // Dynamic import — @xenova/transformers is an optional dependency
+        const { pipeline } = await import('@xenova/transformers');
+        _pipeline = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
+          quantized: true, // Use INT8 quantized model for speed
+        });
+        console.log('🧠 Loaded local embedding model: all-MiniLM-L6-v2');
+        return _pipeline;
+      } catch (err) {
+        console.warn('⚠️  @xenova/transformers not available, falling back to character-frequency embeddings.');
+        console.warn('   Install with: npm install @xenova/transformers');
+        _pipeline = null;
+        _pipelineLoading = null;
+        return null;
+      }
+    })();
   }
-  // Normalize
+
+  return _pipelineLoading;
+}
+
+/**
+ * Generate a semantic embedding using the local transformer model.
+ * Falls back to character-frequency if the model is not available.
+ */
+async function embed(text: string, dims: number = 384): Promise<number[]> {
+  const pipe = await getEmbeddingPipeline();
+
+  if (pipe) {
+    // Real semantic embedding via all-MiniLM-L6-v2
+    const output = await pipe(text, { pooling: 'mean', normalize: true });
+    // output.data is a Float32Array; convert to regular array
+    return Array.from(output.data as Float32Array);
+  }
+
+  // Fallback: improved TF-IDF-style embedding (still not semantic, but
+  // better than pure char-frequency). Only used if transformers is missing.
+  return fallbackEmbed(text, dims);
+}
+
+/**
+ * Fallback embedding using word-level frequency hashing.
+ * This is NOT semantic — it exists only to keep the system functional
+ * when @xenova/transformers is not installed.
+ */
+function fallbackEmbed(text: string, dims: number = 384): number[] {
+  const embedding = new Array(dims).fill(0);
+  const words = text.toLowerCase().split(/\W+/).filter(Boolean);
+
+  for (const word of words) {
+    // FNV-1a hash for better distribution than charCodeAt
+    let hash = 2166136261;
+    for (let i = 0; i < word.length; i++) {
+      hash ^= word.charCodeAt(i);
+      hash = (hash * 16777619) >>> 0;
+    }
+    embedding[hash % dims] += 1;
+  }
+
+  // L2 normalize
   const magnitude = Math.sqrt(embedding.reduce((sum: number, v: number) => sum + v * v, 0));
   return magnitude > 0 ? embedding.map((v: number) => v / magnitude) : embedding;
 }
@@ -48,6 +113,8 @@ function cosineSimilarity(a: number[], b: number[]): number {
   return dot / (Math.sqrt(magA) * Math.sqrt(magB) || 1);
 }
 
+// ── In-Memory Vector Store ─────────────────────────────────────────────────
+
 /**
  * In-memory vector store for development.
  * Swap with PineconeVectorStore for production.
@@ -56,16 +123,12 @@ export class InMemoryVectorStore implements IVectorStore {
   private documents: Map<string, VectorDocument> = new Map();
 
   async upsertDocument(id: string, text: string, metadata?: Record<string, any>): Promise<void> {
-    this.documents.set(id, {
-      id,
-      text,
-      metadata,
-      embedding: simpleEmbed(text),
-    });
+    const embedding = await embed(text);
+    this.documents.set(id, { id, text, metadata, embedding });
   }
 
   async query(text: string, topK: number = 5): Promise<VectorQueryResult[]> {
-    const queryEmbedding = simpleEmbed(text);
+    const queryEmbedding = await embed(text);
     const results: VectorQueryResult[] = [];
 
     for (const doc of this.documents.values()) {
@@ -88,10 +151,12 @@ export class InMemoryVectorStore implements IVectorStore {
   }
 }
 
+// ── Pinecone Vector Store ──────────────────────────────────────────────────
+
 /**
  * Pinecone-backed vector store (requires @pinecone-database/pinecone).
  * Install: npm install @pinecone-database/pinecone
- * 
+ *
  * To use, set environment variables:
  *   PINECONE_API_KEY, PINECONE_INDEX, PINECONE_ENVIRONMENT
  */
@@ -127,7 +192,7 @@ export class PineconeVectorStore implements IVectorStore {
 
   async upsertDocument(id: string, text: string, metadata?: Record<string, any>): Promise<void> {
     await this.ensureClient();
-    const embedding = simpleEmbed(text, 1536); // Pinecone commonly uses 1536 dims
+    const embedding = await embed(text, 384); // MiniLM uses 384 dims
     await this.index.upsert([{
       id,
       values: embedding,
@@ -137,7 +202,7 @@ export class PineconeVectorStore implements IVectorStore {
 
   async query(text: string, topK: number = 5): Promise<VectorQueryResult[]> {
     await this.ensureClient();
-    const embedding = simpleEmbed(text, 1536);
+    const embedding = await embed(text, 384);
     const results = await this.index.query({
       vector: embedding,
       topK,
@@ -157,6 +222,8 @@ export class PineconeVectorStore implements IVectorStore {
     await this.index.deleteOne(id);
   }
 }
+
+// ── Factory ────────────────────────────────────────────────────────────────
 
 /**
  * Factory: create vector store based on environment.

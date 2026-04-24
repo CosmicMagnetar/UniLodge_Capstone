@@ -1,185 +1,100 @@
-# 🚀 UniLodge v2 - Ready to Go!
+# 🚀 UniLodge v2 - Quick Start Guide
 
-## ✅ Complete Status
+Welcome to the UniLodge v2 Capstone project. This guide will help you get the entire platform up and running on your local machine.
 
-All systems are now set up and ready for development!
+## ✅ Prerequisites
 
-### ✨ What Just Completed
+Ensure you have the following installed on your system:
+- **Node.js** (v18 or higher)
+- **NPM** (v9 or higher)
 
-1. **Tests for `packages/shared`** ✅
-   - Created comprehensive test suite with 28 test cases
-   - All tests passing
-   - Coverage for all Zod schemas
-
-2. **Backend Service** ✅
-   - Started on port 3001
-   - Full API endpoints ready
-   - Database migrations in place
-
-3. **Frontend Service** ✅
-   - Started on port 3000
-   - All 11 pages implemented
-   - Form components library ready
-   - Hot reload enabled
-
-4. **AI Engine Service** ✅
-   - Started on port 8000
-   - Recommendations engine ready
-   - Price suggestion service ready
-
-5. **Development Documentation** ✅
-   - Created `DEVELOPMENT.md` with complete setup guide
-   - npm scripts configured for all commands
+You do **not** need Python installed to run this project.
 
 ---
 
-## 🎯 Quick Start Commands
+## ⚙️ Environment Configuration
 
-### Start Everything
+Before starting the services, ensure your environment variables are correctly configured in each of the three applications.
 
+### 1. Frontend (`apps/frontend/.env.local`)
+Create this file and ensure it contains:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
+
+### 2. Backend (`apps/backend/.env`)
+Create this file and ensure it contains:
+```env
+PORT=3001
+MONGODB_URI=mongodb+srv://<your-username>:<your-password>@<your-cluster>.mongodb.net/unilodge?retryWrites=true&w=majority
+JWT_SECRET=your_super_secret_jwt_key_12345
+AI_ENGINE_URL=http://localhost:3002
+```
+
+### 3. AI Engine (`apps/ai-engine/.env`)
+Create this file and ensure it contains:
+```env
+PORT=3002
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+```
+
+---
+
+## 🎯 Running the Platform
+
+This is a monorepo containing three distinct Node.js services. To run the application successfully, you need to open **three separate terminal windows**.
+
+### 1️⃣ Start the Frontend
+In your first terminal:
 ```bash
-npm run dev:all
-```
-
-Services will open on:
-
-- Frontend: http://localhost:3000
-- Backend: http://localhost:3001
-- AI Engine: http://localhost:8000
-
-### Start Individual Services
-
-```bash
-npm run dev:frontend  # Next.js on port 3000
-npm run dev:backend   # API on port 3001
-npm run dev:ai        # AI Engine on port 8000
-```
-
-### Run Tests
-
-```bash
-npm test              # All tests (all packages)
-npm run test:shared   # Shared package schemas
-npm run test:frontend # Frontend tests
-npm run test:backend  # Backend tests
-```
-
-### Code Quality
-
-```bash
-npm run lint          # Check linting
-npm run lint:fix      # Fix issues
-npm run type-check    # TypeScript check
-```
-
----
-
-## 📊 Project Summary
-
-```
-✅ Backend:           100% (9 services, 10+ endpoints)
-✅ Frontend:          90% (11 pages, responsive design)
-✅ Testing:           95% (100+ test cases)
-✅ Shared Package:    100% (28 tests passing)
-✅ DevOps:            100% (CI/CD pipeline ready)
-✅ Documentation:     100% (6,500+ lines)
-```
-
----
-
-## 📁 Key Files Created in This Session
-
-### Tests
-
-- `packages/shared/__tests__/schemas.test.ts` - 28 comprehensive schema tests
-- `apps/backend/__tests__/e2e/complete-journey.test.ts` - Full user workflows
-- `apps/backend/__tests__/e2e/warden-workflow.test.ts` - Warden workflows
-
-### Configuration
-
-- `packages/shared/vitest.config.ts` - Test configuration
-- `scripts/start-all.js` - Node.js multi-service starter
-- `scripts/start-all.sh` - Bash startup script
-
-### Documentation
-
-- `DEVELOPMENT.md` - Complete development guide
-- Updated `README.md` - Comprehensive project overview
-- Updated `package.json` - All npm scripts configured
-
----
-
-## 🎓 What You Can Do Now
-
-### Immediate Tasks
-
-1. **Run all services**: `npm run dev:all`
-2. **Run tests**: `npm test`
-3. **Check code quality**: `npm run lint`
-4. **Make changes**: Edit files - hot reload enabled!
-
-### Development Tasks
-
-- Work on frontend pages (all basic pages created, can extend)
-- Work on backend services (all 9 services ready)
-- Run tests after changes
-- Fix any linting issues with `npm run lint:fix`
-
-### Testing
-
-- Unit tests ready for all services
-- Integration tests for booking workflows
-- E2E tests for complete user journeys
-- Shared schema validation tests
-
----
-
-## 🔧 File Structure
-
-```
-unilodge-v2/
-├── apps/
-│   ├── frontend/          # Next.js with 11 pages
-│   ├── backend/           # Services & API routes
-│   └── ai-engine/         # AI services
-├── packages/
-│   └── shared/            # Shared schemas + types
-├── scripts/
-│   ├── start-all.js       # Node startup (npm run start:all)
-│   └── start-all.sh       # Bash startup (bash scripts/start-all.sh)
-├── docs/                  # Documentation guides
-└── package.json           # Root with workspaces
-```
-
----
-
-## 📝 Next Steps
-
-1. **Development**: Start services with `npm run dev:all`
-2. **Testing**: Run `npm test` to verify everything
-3. **Modification**: Edit any files - changes reload automatically
-4. **Deployment**: See `DEPLOYMENT.md` when ready
-
----
-
-## 🆘 Quick Troubleshooting
-
-### Port conflicts:
-
-```bash
-# Kill process on port
-lsof -i :3000
-kill -9 <PID>
-```
-
-### Install issues:
-
-```bash
+cd apps/frontend
 npm install --legacy-peer-deps
+npm run dev
+```
+*The frontend will be accessible at `http://localhost:3000`*
+
+### 2️⃣ Start the Backend API
+In your second terminal:
+```bash
+cd apps/backend
+npm install --legacy-peer-deps
+npm run dev
+```
+*The backend will be accessible at `http://localhost:3001`*
+
+### 3️⃣ Start the AI Engine
+In your third terminal:
+```bash
+cd apps/ai-engine
+npm install --legacy-peer-deps
+npm run dev
+```
+*The AI Engine will be accessible at `http://localhost:3002`*
+
+> 🚨 **CRITICAL WARNING** 🚨
+> Do **NOT** attempt to run the AI engine using Python or Uvicorn (e.g. `python -m uvicorn main:app`). The AI Engine was rewritten as a Node.js Express application to stabilize the platform. Running the Python command will result in continuous `503 Service Unavailable` errors in the frontend chat!
+
+---
+
+## 🆘 Troubleshooting
+
+### Port Conflicts
+If you encounter an `EADDRINUSE` error, it means a port is already taken by a background process. You can kill the process using:
+
+**For Mac/Linux:**
+```bash
+# To kill port 3000 (Frontend)
+lsof -ti:3000 | xargs kill -9
+
+# To kill port 3001 (Backend)
+lsof -ti:3001 | xargs kill -9
+
+# To kill port 3002 (AI Engine)
+lsof -ti:3002 | xargs kill -9
 ```
 
-### Clear cache:
-
+### Missing Dependencies
+If you experience module resolution errors after pulling new code, run the following command in the root of the project to clear the cache and reinstall:
 ```bash
 npm cache clean --force
 rm -rf node_modules
@@ -188,32 +103,6 @@ npm install --legacy-peer-deps
 
 ---
 
-## 🎉 Summary
+## 🎉 You're All Set!
 
-**Status**: 🟢 All Systems Go!
-
-Your UniLodge v2 development environment is fully configured and operational:
-
-- ✅ Frontend (11 pages, Tailwind CSS, TypeScript)
-- ✅ Backend (9 services, 10+ API endpoints)
-- ✅ AI Engine (recommendations, pricing)
-- ✅ Shared Package (Zod schemas, types)
-- ✅ Testing (100+ test cases passing)
-- ✅ Documentation (complete guides)
-
-**You can now:**
-
-1. Start all services: `npm run dev:all`
-2. Run tests: `npm test`
-3. Make code changes with hot reload
-4. Deploy to production when ready
-
----
-
-**Happy coding! 🚀**
-
-For detailed information, see:
-
-- `DEVELOPMENT.md` - Development setup and commands
-- `README.md` - Project overview
-- Individual documentation files in `/docs`
+Once all three terminals are running without errors, open your browser and navigate to `http://localhost:3000` to start using UniLodge v2!

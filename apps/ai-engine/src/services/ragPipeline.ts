@@ -15,9 +15,9 @@ export interface RAGConfig {
 }
 
 const DEFAULT_CONFIG: RAGConfig = {
-  topK: 5,
-  contextWindow: 3000,
-  includeScores: false,
+  topK: 20,
+  contextWindow: 80000,
+  includeScores: true,
 };
 
 export class RAGPipeline {
